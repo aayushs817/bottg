@@ -1,0 +1,14 @@
+{
+  "name": "bottg",
+  "version": "1.0.0",
+  "main": "api/bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "telegraf": "^4.16.3"
+  }
+}
