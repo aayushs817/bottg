@@ -1,4 +1,4 @@
-require('dotenv').config({ path: require('path').join(__dirname, '..', '.env'), quiet: true });
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
 const path = require('path');
 const mongoose = require('mongoose');
@@ -26,12 +26,8 @@ const BASE_LINKS = {
   telegram: 'https://t.me/+qvRgBIht3fw0YzQ1'
 };
 
-let isConnected = false;
-
 async function connectDB() {
-  if (isConnected) return;
   await mongoose.connect(MONGODB_URI);
-  isConnected = true;
   console.log('MongoDB connected');
 }
 
@@ -515,14 +511,12 @@ bot.catch((err) => {
   console.log('BOT ERROR:', err);
 });
 
-module.exports = async (req, res) => {
+(async () => {
   try {
     await connectDB();
-    if (req.method === 'POST') {
-      await bot.handleUpdate(req.body);
-    }
+    await bot.launch();
+    console.log('Bot is running...');
   } catch (err) {
-    console.error('Handler error:', err);
+    console.error('Launch error:', err);
   }
-  res.status(200).end();
-};
+})();

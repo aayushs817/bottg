@@ -8,4 +8,4 @@ const CounterSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.models.Counter || mongoose.model('Counter', CounterSchema);
+module.exports = mongoose.model('Counter', CounterSchema);

@@ -15,4 +15,4 @@ const EventSchema = new mongoose.Schema(
 EventSchema.index({ type: 1, telegramId: 1 });
 EventSchema.index({ createdAt: -1 });
 
-module.exports = mongoose.models.Event || mongoose.model('Event', EventSchema);
+module.exports = mongoose.model('Event', EventSchema);
