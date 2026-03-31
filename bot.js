@@ -17,7 +17,7 @@ if (!MONGODB_URI) throw new Error('MONGODB_URI is missing');
 const bot = new Telegraf(BOT_TOKEN);
 
 const PHOTO_FILE_ID =
-  'AgACAgQAAxkDAAMIacr6CltaI4V3Rk_GRdnSH3hPOdMAAgkNaxsXgVlSzQgv0iBmMbcBAAMCAAN5AAM6BA';
+  'AgACAgQAAxkDAAMEacq-wexk-r7se-j-qc1uydx8JWMAAh0NaxvSelxSlE4f5hUwNNcBAAMCAAN5AAM6BA';
 
 const BASE_LINKS = {
   register: 'https://www.reddy888.com/register?campaignId=gauravxcricket',
