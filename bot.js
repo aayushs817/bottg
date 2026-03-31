@@ -349,7 +349,7 @@ bot.catch((err) => {
 async function main() {
   await mongoose.connect(MONGODB_URI);
   console.log('MongoDB connected');
-  await bot.launch();
+  await bot.launch({ dropPendingUpdates: true });
   console.log('Bot is running...');
 }
 

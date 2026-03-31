@@ -26,10 +26,6 @@ const BASE_LINKS = {
   telegram: 'https://t.me/+qvRgBIht3fw0YzQ1'
 };
 
-async function connectDB() {
-  await mongoose.connect(MONGODB_URI);
-  console.log('MongoDB connected');
-}
 
 function runBackground(label, fn) {
   Promise.resolve()
@@ -511,12 +507,15 @@ bot.catch((err) => {
   console.log('BOT ERROR:', err);
 });
 
-(async () => {
-  try {
-    await connectDB();
-    await bot.launch();
-    console.log('Bot is running...');
-  } catch (err) {
-    console.error('Launch error:', err);
-  }
-})();
+async function main() {
+  await mongoose.connect(MONGODB_URI);
+  console.log('MongoDB connected');
+  await bot.launch({ dropPendingUpdates: true });
+  console.log('Bot is running...');
+}
+
+main().catch(console.error);
+
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
