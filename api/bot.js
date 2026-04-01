@@ -17,13 +17,11 @@ if (!MONGODB_URI) throw new Error('MONGODB_URI is missing in .env');
 
 const bot = new Telegraf(BOT_TOKEN);
 
-const PHOTO_FILE_ID =
-  'AgACAgQAAxkDAAMEacq-wexk-r7se-j-qc1uydx8JWMAAh0NaxvSelxSlE4f5hUwNNcBAAMCAAN5AAM6BA';
+const IMAGE_PATH = path.join(__dirname, '..', 'image.png');
 
 const BASE_LINKS = {
-  register: 'https://www.reddy888.com/register?campaignId=gauravxcricket',
-  support: 'https://wa.link/Reddy888vip',
-  telegram: 'https://t.me/+qvRgBIht3fw0YzQ1'
+  website: 'https://www.cricbuzz.com/',
+  teams: 'https://www.cricbuzz.com/cricket-team'
 };
 
 
@@ -124,38 +122,30 @@ async function getStatsText() {
 
   const [
     startCount,
-    registerClick,
-    supportClick,
-    telegramClick,
+    websiteClick,
+    teamsClick,
     helpClick,
-    registerLinkOpened,
-    supportLinkOpened,
-    telegramLinkOpened,
+    websiteLinkOpened,
+    teamsLinkOpened,
     uniqueStartUsers,
-    uniqueRegisterClicks,
-    uniqueSupportClicks,
-    uniqueTelegramClicks,
+    uniqueWebsiteClicks,
+    uniqueTeamsClicks,
     uniqueHelpClicks,
-    uniqueRegisterLinkOpens,
-    uniqueSupportLinkOpens,
-    uniqueTelegramLinkOpens
+    uniqueWebsiteLinkOpens,
+    uniqueTeamsLinkOpens
   ] = await Promise.all([
     getCounterValue('start'),
-    getCounterValue('register_click'),
-    getCounterValue('support_click'),
-    getCounterValue('telegram_click'),
+    getCounterValue('website_click'),
+    getCounterValue('teams_click'),
     getCounterValue('help_click'),
-    getCounterValue('register_link_opened'),
-    getCounterValue('support_link_opened'),
-    getCounterValue('telegram_link_opened'),
+    getCounterValue('website_link_opened'),
+    getCounterValue('teams_link_opened'),
     uniqueUsersByEvent('start'),
-    uniqueUsersByEvent('click_register'),
-    uniqueUsersByEvent('click_support'),
-    uniqueUsersByEvent('click_telegram'),
+    uniqueUsersByEvent('click_website'),
+    uniqueUsersByEvent('click_teams'),
     uniqueUsersByEvent('click_help'),
-    uniqueUsersByEvent('open_register_link'),
-    uniqueUsersByEvent('open_support_link'),
-    uniqueUsersByEvent('open_telegram_link')
+    uniqueUsersByEvent('open_website_link'),
+    uniqueUsersByEvent('open_teams_link')
   ]);
 
   return (
@@ -165,14 +155,12 @@ async function getStatsText() {
     `- Total /start count: ${startCount}\n` +
     `- Unique /start users: ${uniqueStartUsers}\n\n` +
     `Internal button clicks\n` +
-    `- Register clicks: ${registerClick} (${uniqueRegisterClicks} unique)\n` +
-    `- Support clicks: ${supportClick} (${uniqueSupportClicks} unique)\n` +
-    `- Telegram clicks: ${telegramClick} (${uniqueTelegramClicks} unique)\n` +
+    `- Website clicks: ${websiteClick} (${uniqueWebsiteClicks} unique)\n` +
+    `- Teams clicks: ${teamsClick} (${uniqueTeamsClicks} unique)\n` +
     `- Help clicks: ${helpClick} (${uniqueHelpClicks} unique)\n\n` +
     `External link shown\n` +
-    `- Register link shown: ${registerLinkOpened} (${uniqueRegisterLinkOpens} unique)\n` +
-    `- Support link shown: ${supportLinkOpened} (${uniqueSupportLinkOpens} unique)\n` +
-    `- Telegram link shown: ${telegramLinkOpened} (${uniqueTelegramLinkOpens} unique)\n`
+    `- Website link shown: ${websiteLinkOpened} (${uniqueWebsiteLinkOpens} unique)\n` +
+    `- Teams link shown: ${teamsLinkOpened} (${uniqueTeamsLinkOpens} unique)\n`
   );
 }
 
@@ -257,9 +245,8 @@ async function trackAndReplyLink(ctx, type, title, buttonText) {
 
 function mainMenuKeyboard() {
   return Markup.inlineKeyboard([
-    [Markup.button.callback('🚀 Register Now', 'register')],
-    [Markup.button.callback('💬 24x7 Support', 'support')],
-    [Markup.button.callback('📢 Join Telegram', 'telegram')],
+    [Markup.button.callback('🌐 Open Website', 'website')],
+    [Markup.button.callback('👥 View Teams', 'teams')],
     [Markup.button.callback('🤔 Help Me Choose', 'help_choose')]
   ]);
 }
@@ -273,16 +260,16 @@ bot.start(async (ctx) => {
     });
 
     try {
-      await ctx.replyWithPhoto(PHOTO_FILE_ID, {
+      await ctx.replyWithPhoto({ source: IMAGE_PATH }, {
         caption:
-          `👋 *Welcome to ReddyAnna Official Book*\n\n` +
-          `Choose what you want to do below:`,
+          `🏏 *Welcome to the Cricket News App*\n\n` +
+          `Get the latest cricket news, live scores, and team updates from Cricbuzz.`,
         parse_mode: 'Markdown'
       });
     } catch (photoError) {
       console.log('PHOTO ERROR:', photoError.message);
       await ctx.reply(
-        `👋 Welcome to ReddyAnna Official Book\n\nChoose what you want to do below:`
+        `🏏 Welcome to the Cricket News App\n\nGet the latest cricket news, live scores, and team updates from Cricbuzz.`
       );
     }
 
@@ -318,93 +305,85 @@ bot.command('id', async (ctx) => {
   });
 });
 
-bot.action('register', async (ctx) => {
+bot.command('imageid', async (ctx) => {
   try {
-    await ctx.answerCbQuery();
-
-    await trackAndReplyLink(
-      ctx,
-      'register',
-      `✅ *Best for new users*\n\nCreate your account here:`,
-      '🔥 Open Registration'
+    const sentMessage = await ctx.replyWithPhoto(
+      { source: IMAGE_PATH },
+      { caption: 'Uploaded `image.png` to fetch its Telegram file_id.', parse_mode: 'Markdown' }
     );
 
-    runBackground('register-click', async () => {
-      await Promise.all([
-        incrementUserField(ctx.from, 'clicks.register'),
-        incrementCounter('register_click'),
-        logEvent(ctx.from, 'click_register', { cta: 'register' })
-      ]);
+    const photos = sentMessage.photo || [];
+    const bestPhoto = photos[photos.length - 1];
+
+    if (!bestPhoto?.file_id) {
+      return ctx.reply('Image uploaded, but no file_id was returned.');
+    }
+
+    await ctx.reply(`Image file_id:\n\`${bestPhoto.file_id}\``, {
+      parse_mode: 'Markdown'
     });
-
-    notifyAdminInBackground(
-      ctx.from,
-      'User clicked register',
-      { cta: 'register' },
-      'notify-admin-register'
-    );
   } catch (error) {
-    console.log('REGISTER ERROR:', error);
+    console.log('IMAGE ID ERROR:', error);
   }
 });
 
-bot.action('support', async (ctx) => {
+bot.action('website', async (ctx) => {
   try {
     await ctx.answerCbQuery();
 
     await trackAndReplyLink(
       ctx,
-      'support',
-      `💬 *Need help right now?*\n\nTalk to support here:`,
-      '📞 Open Support Chat'
+      'website',
+      `🌐 *Cricbuzz Website*\n\nOpen the main Cricbuzz site here:`,
+      '🏏 Open Cricbuzz'
     );
 
-    runBackground('support-click', async () => {
+    runBackground('website-click', async () => {
       await Promise.all([
-        incrementUserField(ctx.from, 'clicks.support'),
-        incrementCounter('support_click'),
-        logEvent(ctx.from, 'click_support', { cta: 'support' })
+        incrementUserField(ctx.from, 'clicks.website'),
+        incrementCounter('website_click'),
+        logEvent(ctx.from, 'click_website', { cta: 'website' })
       ]);
     });
 
     notifyAdminInBackground(
       ctx.from,
-      'User clicked support',
-      { cta: 'support' },
-      'notify-admin-support'
+      'User clicked website',
+      { cta: 'website' },
+      'notify-admin-website'
     );
   } catch (error) {
-    console.log('SUPPORT ERROR:', error);
+    console.log('WEBSITE ERROR:', error);
   }
 });
 
-bot.action('telegram', async (ctx) => {
+bot.action('teams', async (ctx) => {
   try {
     await ctx.answerCbQuery();
 
     await trackAndReplyLink(
       ctx,
-      'telegram',
-      `📢 *Get updates and community access*\n\nJoin here:`,
-      '📲 Join Telegram Channel'
+      'teams',
+      `👥 *Cricket Teams*\n\nBrowse teams on Cricbuzz here:`,
+      '📋 Open Teams'
     );
 
-    runBackground('telegram-click', async () => {
+    runBackground('teams-click', async () => {
       await Promise.all([
-        incrementUserField(ctx.from, 'clicks.telegram'),
-        incrementCounter('telegram_click'),
-        logEvent(ctx.from, 'click_telegram', { cta: 'telegram' })
+        incrementUserField(ctx.from, 'clicks.teams'),
+        incrementCounter('teams_click'),
+        logEvent(ctx.from, 'click_teams', { cta: 'teams' })
       ]);
     });
 
     notifyAdminInBackground(
       ctx.from,
-      'User clicked join telegram',
-      { cta: 'telegram' },
-      'notify-admin-telegram'
+      'User clicked teams',
+      { cta: 'teams' },
+      'notify-admin-teams'
     );
   } catch (error) {
-    console.log('TELEGRAM ERROR:', error);
+    console.log('TEAMS ERROR:', error);
   }
 });
 
@@ -414,15 +393,13 @@ bot.action('help_choose', async (ctx) => {
 
     await ctx.reply(
       `Here’s a quick guide:\n\n` +
-        `🚀 *Register* — for new users\n` +
-        `💬 *Support* — for help or questions\n` +
-        `📢 *Telegram* — for updates and community`,
+        `🌐 *Website* — for latest cricket news and live scores\n` +
+        `👥 *Teams* — for squad and team pages`,
       {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
-          [Markup.button.callback('🚀 I want to register', 'register')],
-          [Markup.button.callback('💬 I need support', 'support')],
-          [Markup.button.callback('📢 Show Telegram', 'telegram')],
+          [Markup.button.callback('🌐 Open Website', 'website')],
+          [Markup.button.callback('👥 View Teams', 'teams')],
           [Markup.button.callback('⬅ Back', 'back_main')]
         ])
       }
@@ -518,4 +495,3 @@ main().catch(console.error);
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
-
