@@ -2,9 +2,10 @@ require("dotenv").config();
 const { Telegraf, Markup } = require("telegraf");
 
 const BOT_TOKEN = "8642810499:AAGX3srbfsOt-lR5NB7Ep0rnE1U5Do_KBVI";
-const HYPRFORGE_URL = "https://hyprforge.com";
+const HYPRFORGE_URL = "https://hyprforge.com/";
 const CONSULT_URL = process.env.CONSULT_URL || HYPRFORGE_URL;
 const BRAND_NAME = process.env.BRAND_NAME || "HyprForge";
+const SOLUTIONS_URL = process.env.SOLUTIONS_URL || "https://www.hyprforge.com/solutions";
 
 if (!BOT_TOKEN) {
   throw new Error("BOT_TOKEN is missing. Set it in your environment before starting the bot.");
@@ -12,35 +13,44 @@ if (!BOT_TOKEN) {
 
 const bot = new Telegraf(BOT_TOKEN);
 
+// --- Ad Variations (policy-safe) ---
 const adVariations = [
   "Build and scale digital products with expert support. Book a free consultation at hyprforge.com",
   "Need help with your next digital project? Get practical guidance from HyprForge. Book a free consultation.",
   "Explore tailored digital solutions for your business. Book a free consultation with HyprForge today.",
 ];
 
-const welcomeText = [
-  "Welcome to the HyprForge ad bot.",
-  "",
-  "Use /ad to get a Telegram-compliant promo message, /share to get a shareable post, and /about to learn more.",
-].join("\n");
+// --- Welcome / Intro Message ---
+const welcomeText =
+  `Welcome to ${BRAND_NAME}\n\n` +
+  `We help businesses build, launch, and scale digital products with practical solutions and expert guidance.\n\n` +
+  `What you can do here:\n` +
+  `- Explore our services\n` +
+  `- View real case studies\n` +
+  `- Book a consultation with our team`;
 
-const aboutText =
-  "This bot shares simple, policy-friendly promotional copy for HyprForge. All ad text is written to stay clear, factual, and professional.";
-
-const adKeyboard = Markup.inlineKeyboard([
-  [Markup.button.url("Book Free Consultation", CONSULT_URL)],
+// --- CTA Buttons ---
+const mainKeyboard = Markup.inlineKeyboard([
+  [Markup.button.url("Book your consultation now", HYPRFORGE_URL)],
+  [Markup.button.url("View case studies", SOLUTIONS_URL)],
 ]);
 
+// --- Commands ---
+
 bot.start(async (ctx) => {
-  await ctx.reply(welcomeText);
+  await ctx.reply(welcomeText, mainKeyboard);
 });
 
 bot.command("about", async (ctx) => {
-  await ctx.reply(aboutText);
+  const aboutText =
+    `${BRAND_NAME} provides digital solutions to help businesses grow and scale. ` +
+    `We focus on building reliable, practical systems tailored to your needs.`;
+
+  await ctx.reply(aboutText, mainKeyboard);
 });
 
 bot.command("website", async (ctx) => {
-  await ctx.reply(`Visit ${BRAND_NAME}: ${HYPRFORGE_URL}`, adKeyboard);
+  await ctx.reply(`Visit ${BRAND_NAME}: ${HYPRFORGE_URL}`, mainKeyboard);
 });
 
 bot.command("ad", async (ctx) => {
@@ -54,40 +64,41 @@ bot.command("ad", async (ctx) => {
     }
   }
 
-  await ctx.reply(adVariations[index], adKeyboard);
+  await ctx.reply(adVariations[index], mainKeyboard);
 });
 
 bot.command("variants", async (ctx) => {
   const text = adVariations.map((item, i) => `${i + 1}. ${item}`).join("\n\n");
-  await ctx.reply(text, adKeyboard);
+  await ctx.reply(text, mainKeyboard);
 });
 
 bot.command("share", async (ctx) => {
   const shareText =
-    `Looking for expert help with digital products, automation, or growth? ${BRAND_NAME} offers practical guidance and tailored solutions. Book a free consultation: ${CONSULT_URL}`;
-  await ctx.reply(shareText, adKeyboard);
+    `Looking for expert help with digital products or growth? ${BRAND_NAME} offers practical solutions and tailored support. Book your consultation: ${HYPRFORGE_URL}`;
+  await ctx.reply(shareText, mainKeyboard);
 });
 
 bot.command("help", async (ctx) => {
   const helpText = [
-    "/start - welcome message",
-    "/about - what this bot does",
-    "/ad - send one ad variation",
-    "/ad 2 - send a specific variation",
-    "/variants - list all ad variations",
-    "/share - send a longer shareable promo post",
-    "/website - show the HyprForge link",
+    "/start - introduction",
+    "/about - about HyprForge",
+    "/ad - send one ad",
+    "/ad 2 - send a specific ad",
+    "/variants - list all ads",
+    "/share - share message",
+    "/website - open website",
   ].join("\n");
 
   await ctx.reply(helpText);
 });
 
+// --- Error Handling ---
 bot.catch((err, ctx) => {
-  console.error("Bot error for update", ctx.update, err);
+  console.error("Bot error:", err);
 });
 
 bot.launch();
-console.log("HyprForge Telegram ad bot is running...");
+console.log("HyprForge Telegram bot running...");
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
